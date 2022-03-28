@@ -2,12 +2,18 @@ package junit.service;
 
 import junit.dto.User;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 public class UserService {
 
-    public List <User> getAll() {
-        return Collections.emptyList();
+    private final List<User> users = new ArrayList<>();
+
+    public List<User> getAll() {
+        return users;
+    }
+
+    public boolean add(User user) {
+        return users.add(user);
     }
 }
