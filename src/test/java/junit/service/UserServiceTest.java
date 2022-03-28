@@ -1,13 +1,19 @@
 package junit.service;
 
+
 import junit.dto.User;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestMethodOrder;
 
 import java.util.List;
 import java.util.Map;
@@ -20,7 +26,6 @@ import static org.hamcrest.collection.IsMapContaining.hasKey;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Аннотация @TestInstance(TestInstance.Lifecycle.PER_METHOD) - Жизненный цикл теста по умолчанию и указывать необязательно. В таком случае
@@ -30,6 +35,10 @@ import static org.junit.jupiter.api.Assertions.fail;
  */
 
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
+// @TestMethodOrder(MethodOrderer.OrderAnnotation.class)       аннотация для определения порядка выполнения тестов
+// @TestMethodOrder(MethodOrderer.MethodName.class)       аннотация для запуска тестов по алфавиту
+
+@TestMethodOrder(MethodOrderer.DisplayName.class)      // аннотация для более понятного отображения названия тестов
 public class UserServiceTest {
 
     private static final User IVAN = User.of(1, "Ivan", "123");
@@ -50,6 +59,7 @@ public class UserServiceTest {
     }
 
     @Test
+    @Order(1)
     void usersEmptyIfNoUserAdded() {
         System.out.println("Test 1: " + this);
         List<User> users = userService.getAll();
@@ -59,6 +69,7 @@ public class UserServiceTest {
     }
 
     @Test
+    @Order(2)
     void usersSizeIfUserAdded() {
         System.out.println("Test 2: " + this);
         userService.add(IVAN);
@@ -68,28 +79,6 @@ public class UserServiceTest {
 
         assertThat(users).hasSize(3);
         //    assertEquals(3, users.size());
-    }
-
-    @Test
-    @Tag("Login")
-    void loginSuccessIfUserExists() {
-        userService.add(IVAN);
-        Optional<User> maybeUser = userService.login(IVAN.getUserName(), IVAN.getPassword());
-
-        assertThat(maybeUser).isPresent();
-        // assertTrue(maybeUser.isPresent());
-        maybeUser.ifPresent(user -> assertThat(user).isEqualTo(IVAN));
-        //  maybeUser.ifPresent(user -> assertEquals(IVAN, user));
-    }
-
-    @Test
-    @Tag("Login")
-    void throwExceptionIfUserNameOrPasswordIsNull() {
-        assertAll(
-                () -> assertThrows(IllegalArgumentException.class, () -> userService.login(null, "dummy")),
-                () -> assertThrows(IllegalArgumentException.class, () -> userService.login("dummy", null))
-        );
-
     }
 
     @Test
@@ -104,27 +93,6 @@ public class UserServiceTest {
                 () -> assertThat(users).containsKeys(IVAN.getId(), PETR.getId()),
                 () -> assertThat(users).containsValues(IVAN, PETR)
         );
-
-
-    }
-
-    @Test
-    @Tag("Login")
-    void loginFailIfPasswordIncorrect() {
-        userService.add(IVAN);
-        Optional<User> maybeUser = userService.login(IVAN.getUserName(), "111");
-
-        assertTrue(maybeUser.isEmpty());
-
-    }
-
-    @Test
-    @Tag("Login")
-    void loginFailIfUserDoesNotExist() {
-        userService.add(IVAN);
-        Optional<User> maybeUser = userService.login("Kiril", IVAN.getPassword());
-
-        assertTrue(maybeUser.isEmpty());
     }
 
     @AfterEach
@@ -135,5 +103,47 @@ public class UserServiceTest {
     @AfterAll
     static void closeConnectionPool() {
         System.out.println("After all: ");
+    }
+
+    @Nested
+    @Tag("Login")
+    @DisplayName("Тестирование функционала авторизации")
+    class LoginTest {
+
+        @Test
+        void loginFailIfUserDoesNotExist() {
+            userService.add(IVAN);
+            Optional<User> maybeUser = userService.login("Kiril", IVAN.getPassword());
+
+            assertTrue(maybeUser.isEmpty());
+        }
+
+        @Test
+        void loginFailIfPasswordIncorrect() {
+            userService.add(IVAN);
+            Optional<User> maybeUser = userService.login(IVAN.getUserName(), "111");
+
+            assertTrue(maybeUser.isEmpty());
+        }
+
+        @Test
+        @DisplayName("Удачная авторизация, если пользователь существует")
+        void loginSuccessIfUserExists() {
+            userService.add(IVAN);
+            Optional<User> maybeUser = userService.login(IVAN.getUserName(), IVAN.getPassword());
+
+            assertThat(maybeUser).isPresent();
+            // assertTrue(maybeUser.isPresent());
+            maybeUser.ifPresent(user -> assertThat(user).isEqualTo(IVAN));
+            //  maybeUser.ifPresent(user -> assertEquals(IVAN, user));
+        }
+
+        @Test
+        void throwExceptionIfUserNameOrPasswordIsNull() {
+            assertAll(
+                    () -> assertThrows(IllegalArgumentException.class, () -> userService.login(null, "dummy")),
+                    () -> assertThrows(IllegalArgumentException.class, () -> userService.login("dummy", null))
+            );
+        }
     }
 }
