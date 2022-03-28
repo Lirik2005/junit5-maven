@@ -17,7 +17,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsEmptyCollection.empty;
 import static org.hamcrest.collection.IsMapContaining.hasKey;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Аннотация @TestInstance(TestInstance.Lifecycle.PER_METHOD) - Жизненный цикл теста по умолчанию и указывать необязательно. В таком случае
@@ -51,7 +53,7 @@ public class UserServiceTest {
         System.out.println("Test 1: " + this);
         List<User> users = userService.getAll();
 
-       assertThat(users, empty());
+        assertThat(users, empty());
         assertTrue(users.isEmpty(), "User list should be empty"); // message отображается, если тест не срабатывает и дает ошибку
     }
 
@@ -76,6 +78,15 @@ public class UserServiceTest {
         // assertTrue(maybeUser.isPresent());
         maybeUser.ifPresent(user -> assertThat(user).isEqualTo(IVAN));
         //  maybeUser.ifPresent(user -> assertEquals(IVAN, user));
+    }
+
+    @Test
+    void throwExceptionIfUserNameOrPasswordIsNull() {
+        assertAll(
+                () -> assertThrows(IllegalArgumentException.class, () -> userService.login(null, "dummy")),
+                () -> assertThrows(IllegalArgumentException.class, () -> userService.login("dummy", null))
+        );
+
     }
 
     @Test

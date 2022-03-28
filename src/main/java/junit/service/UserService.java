@@ -23,6 +23,9 @@ public class UserService {
     }
 
     public Optional<User> login(String userName, String password) {
+        if (userName == null || password == null) {
+            throw new IllegalArgumentException("Username or password is null");
+        }
         return users.stream()
                     .filter(user -> user.getUserName().equals(userName))
                     .filter(user -> user.getPassword().equals(password))
