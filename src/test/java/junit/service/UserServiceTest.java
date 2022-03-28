@@ -5,6 +5,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
@@ -70,6 +71,7 @@ public class UserServiceTest {
     }
 
     @Test
+    @Tag("Login")
     void loginSuccessIfUserExists() {
         userService.add(IVAN);
         Optional<User> maybeUser = userService.login(IVAN.getUserName(), IVAN.getPassword());
@@ -81,6 +83,7 @@ public class UserServiceTest {
     }
 
     @Test
+    @Tag("Login")
     void throwExceptionIfUserNameOrPasswordIsNull() {
         assertAll(
                 () -> assertThrows(IllegalArgumentException.class, () -> userService.login(null, "dummy")),
@@ -106,6 +109,7 @@ public class UserServiceTest {
     }
 
     @Test
+    @Tag("Login")
     void loginFailIfPasswordIncorrect() {
         userService.add(IVAN);
         Optional<User> maybeUser = userService.login(IVAN.getUserName(), "111");
@@ -115,6 +119,7 @@ public class UserServiceTest {
     }
 
     @Test
+    @Tag("Login")
     void loginFailIfUserDoesNotExist() {
         userService.add(IVAN);
         Optional<User> maybeUser = userService.login("Kiril", IVAN.getPassword());
