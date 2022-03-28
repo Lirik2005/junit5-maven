@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
-class UserServiceTest {
+public class UserServiceTest {
 
     private UserService userService;
 
