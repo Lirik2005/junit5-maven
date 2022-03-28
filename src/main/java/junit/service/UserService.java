@@ -4,7 +4,11 @@ import junit.dto.User;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toMap;
 
 public class UserService {
 
@@ -23,5 +27,9 @@ public class UserService {
                     .filter(user -> user.getUserName().equals(userName))
                     .filter(user -> user.getPassword().equals(password))
                     .findFirst();
+    }
+
+    public Map<Integer, User> getAllConvertedByID() {
+        return users.stream().collect(toMap(User::getId, identity()));
     }
 }
