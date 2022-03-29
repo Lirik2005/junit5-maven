@@ -16,11 +16,22 @@ import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.ArgumentsSource;
+import org.junit.jupiter.params.provider.CsvFileSource;
+import org.junit.jupiter.params.provider.EmptySource;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import paramresolver.UserServiceParamResolver;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -153,5 +164,49 @@ public class UserServiceTest {
                     () -> assertThrows(IllegalArgumentException.class, () -> userService.login("dummy", null))
             );
         }
+
+        @ParameterizedTest(name = "{arguments} test")       // в name можно записать название каждого теста по параметру
+//        @ArgumentsSource()
+//        @EnumSource
+        /**
+         * Эти аннотации передают null в качестве параметра. Используются только в случае когда в тест принимает только ОДИН параметр!!!
+         */
+//        @NullSource
+//        @EmptySource
+//        @ValueSource
+//        @NullAndEmptySource
+
+        /**
+         * В эту аннотацию передаем статический метод, которые дает нам нужные параметры. В данном случае обращение к статическому методу
+         * через полное название класса с помощью решетки потому что тест написан во вложенном классе. В обычном случае аннотация может
+         * выглядеть следующим образом: @MethodSource("getArgumentsFroLoginTest")
+         */
+        @MethodSource("junit.service.UserServiceTest#getArgumentsFroLoginTest")
+
+        /**
+         * Эта аннотация способна передавать данные из *.csv. Проблема в том, что можно передавать только стринги или то, что легко
+         * конвертируется. Т.е. объект через эту аннотацию не передать. В delimiter указываем разделитель данных (',' ';' ':' и так
+         * далее). numLinesToSkip показывает сколько строк в csv-файле надо пропустить (например пропустить заголовок)
+         */
+//        @CsvFileSource(resources = "/login-test-data.csv", delimiter = ',', numLinesToSkip = 1)
+        void loginParametrizedTest(String username, String password, Optional<User> user) {
+            userService.add(IVAN);
+            userService.add(PETR);
+
+            Optional<User> maybeUser = userService.login(username, password);
+
+            assertThat(maybeUser).isEqualTo(user);
+        }
+
+
+    }
+
+    static Stream<Arguments> getArgumentsFroLoginTest() {
+        return Stream.of(
+                Arguments.of("Ivan", "123", Optional.of(IVAN)),
+                Arguments.of("Petr", "111", Optional.of(PETR)),
+                Arguments.of("Petr", "dummy", Optional.empty()),
+                Arguments.of("dummy", "123", Optional.empty())
+        );
     }
 }
