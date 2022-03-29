@@ -1,7 +1,10 @@
 package junit.service;
 
 
+import junit.TestBase;
 import junit.dto.User;
+import junit.extension.GlobalExtension;
+import junit.extension.UserServiceParamResolver;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -11,7 +14,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
@@ -20,15 +22,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.ArgumentsSource;
-import org.junit.jupiter.params.provider.CsvFileSource;
-import org.junit.jupiter.params.provider.EmptySource;
-import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.NullAndEmptySource;
-import org.junit.jupiter.params.provider.NullSource;
-import org.junit.jupiter.params.provider.ValueSource;
-import paramresolver.UserServiceParamResolver;
 
 import java.time.Duration;
 import java.util.List;
@@ -52,13 +46,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * под аннотацией @BeforeAll могут быть НЕСТАТИЧЕСКИМИ!!!
  */
 
-@TestInstance(TestInstance.Lifecycle.PER_METHOD)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 // @TestMethodOrder(MethodOrderer.OrderAnnotation.class)       аннотация для определения порядка выполнения тестов
 // @TestMethodOrder(MethodOrderer.MethodName.class)       аннотация для запуска тестов по алфавиту
 
 @TestMethodOrder(MethodOrderer.DisplayName.class)      // аннотация для более понятного отображения названия тестов
-@ExtendWith({UserServiceParamResolver.class})      // аннотация необходима для внедрения зависимости и автоматического создания userService
-public class UserServiceTest {
+
+public class UserServiceTest extends TestBase {
 
     private static final User IVAN = User.of(1, "Ivan", "123");
     private static final User PETR = User.of(2, "Petr", "111");
@@ -150,10 +144,11 @@ public class UserServiceTest {
         }
 
         @Test
-//        @Disabled("Причина отключения теста") // тест не будет выполняться, но будет видна причина по которой он отключен
+        @Disabled("Причина отключения теста")
+            // тест не будет выполняться, но будет видна причина по которой он отключен
 //        @RepeatedTest(5)   //позволяет запустить тест несколько раз
         void checkLoginFunctionalityPerformance() {
-            assertTimeout(Duration.ofMillis(200L), () -> {
+            assertTimeout(Duration.ofMillis(300L), () -> {
                 Thread.sleep(300L);
                 return userService.login("dummy", IVAN.getPassword());
             });
