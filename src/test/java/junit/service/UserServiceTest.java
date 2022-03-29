@@ -2,6 +2,7 @@ package junit.service;
 
 
 import junit.TestBase;
+import junit.dao.UserDao;
 import junit.dto.User;
 import junit.extension.GlobalExtension;
 import junit.extension.UserServiceParamResolver;
@@ -23,6 +24,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 
 import java.time.Duration;
 import java.util.List;
@@ -58,6 +62,9 @@ public class UserServiceTest extends TestBase {
     private static final User PETR = User.of(2, "Petr", "111");
     private static final User OLEG = User.of(3, "Oleg", "222");
 
+    @Mock
+    private UserDao userDao;
+    @InjectMocks
     private UserService userService;
 
     UserServiceTest(TestInfo testInfo) {
@@ -70,10 +77,33 @@ public class UserServiceTest extends TestBase {
     }
 
     @BeforeEach
-    void prepare(UserService userService) {
+    void prepare() {
         System.out.println("Before each: " + this);
-        this.userService = userService;
+//        Mockito.doReturn(true).when(userDao).delete(IVAN.getId());
+//        this.userDao = Mockito.mock(UserDao.class);
+//        this.userDao = Mockito.spy(new UserDao());
+//        this.userService = new UserService(userDao);
     }
+
+    @Test
+    void throwExceptionIfDataBaseIsNotAvailable() {
+        Mockito.doThrow(RuntimeException.class).when(userDao).delete(IVAN.getId());
+
+        assertThrows(RuntimeException.class, () -> userService.delete(IVAN.getId()));
+    }
+
+    @Test
+    void shouldDeleteExistUser() {
+        userService.add(IVAN);
+        Mockito.doReturn(true).when(userDao).delete(IVAN.getId());
+//        Mockito.doReturn(true).when(userDao).delete(Mockito.any());
+
+//        Mockito.when(userDao.delete(IVAN.getId())).thenReturn(true);
+
+        boolean deleteResult = userService.delete(IVAN.getId());
+        assertThat(deleteResult).isTrue();
+    }
+
 
     @Test
     @Order(1)
