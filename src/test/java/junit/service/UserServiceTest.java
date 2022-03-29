@@ -6,10 +6,12 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
@@ -28,6 +30,7 @@ import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import paramresolver.UserServiceParamResolver;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -39,6 +42,7 @@ import static org.hamcrest.collection.IsEmptyCollection.empty;
 import static org.hamcrest.collection.IsMapContaining.hasKey;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTimeout;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -97,7 +101,7 @@ public class UserServiceTest {
         List<User> users = userService.getAll();
 
         assertThat(users).hasSize(3);
-        //    assertEquals(3, users.size());
+//        assertEquals(3, users.size());
     }
 
     @Test
@@ -146,15 +150,26 @@ public class UserServiceTest {
         }
 
         @Test
+//        @Disabled("Причина отключения теста") // тест не будет выполняться, но будет видна причина по которой он отключен
+//        @RepeatedTest(5)   //позволяет запустить тест несколько раз
+        void checkLoginFunctionalityPerformance() {
+            assertTimeout(Duration.ofMillis(200L), () -> {
+                Thread.sleep(300L);
+                return userService.login("dummy", IVAN.getPassword());
+            });
+        }
+
+
+        @Test
         @DisplayName("Удачная авторизация, если пользователь существует")
         void loginSuccessIfUserExists() {
             userService.add(IVAN);
             Optional<User> maybeUser = userService.login(IVAN.getUserName(), IVAN.getPassword());
 
             assertThat(maybeUser).isPresent();
-            // assertTrue(maybeUser.isPresent());
+//            assertTrue(maybeUser.isPresent());
             maybeUser.ifPresent(user -> assertThat(user).isEqualTo(IVAN));
-            //  maybeUser.ifPresent(user -> assertEquals(IVAN, user));
+//              maybeUser.ifPresent(user -> assertEquals(IVAN, user));
         }
 
         @Test
