@@ -12,8 +12,11 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.extension.ExtendWith;
+import paramresolver.UserServiceParamResolver;
 
 import java.util.List;
 import java.util.Map;
@@ -39,6 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 // @TestMethodOrder(MethodOrderer.MethodName.class)       аннотация для запуска тестов по алфавиту
 
 @TestMethodOrder(MethodOrderer.DisplayName.class)      // аннотация для более понятного отображения названия тестов
+@ExtendWith({UserServiceParamResolver.class})      // аннотация необходима для внедрения зависимости и автоматического создания userService
 public class UserServiceTest {
 
     private static final User IVAN = User.of(1, "Ivan", "123");
@@ -47,15 +51,19 @@ public class UserServiceTest {
 
     private UserService userService;
 
+    UserServiceTest(TestInfo testInfo) {
+        System.out.println();
+    }
+
     @BeforeAll
     static void init() {
         System.out.println("Before all: ");
     }
 
     @BeforeEach
-    void prepare() {
+    void prepare(UserService userService) {
         System.out.println("Before each: " + this);
-        userService = new UserService();
+        this.userService = userService;
     }
 
     @Test
